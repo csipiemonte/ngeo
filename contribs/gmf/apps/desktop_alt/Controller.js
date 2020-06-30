@@ -205,6 +205,8 @@ const module = angular.module('Appdesktop_alt', [
   ngeoStatemanagerWfsPermalink.name,
 ]);
 
+module.value('gmfDropFileEnabled', true);
+
 module.controller('AlternativeDesktopController', Controller);
 
 export default module;

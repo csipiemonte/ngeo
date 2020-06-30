@@ -23,6 +23,7 @@ import angular from 'angular';
 import gmfPermalinkModule from 'gmf/permalink/module.js';
 import gmfEditingSnapping from 'gmf/editing/Snapping.js';
 import ngeoMapModule from 'ngeo/map/module.js';
+import gmfFileDropZone from 'gmf/dropfile/fileDropZoneComponent.js';
 import ngeoMapFeatureOverlayMgr from 'ngeo/map/FeatureOverlayMgr.js';
 
 /**
@@ -34,6 +35,7 @@ const module = angular.module('gmfMapComponent', [
   gmfEditingSnapping.name,
   ngeoMapModule.name,
   ngeoMapFeatureOverlayMgr.name,
+  gmfFileDropZone.name,
 ]);
 
 module.run(
@@ -85,6 +87,7 @@ module.directive('gmfMap', gmfMapComponent);
  * @param {import("ngeo/map/FeatureOverlayMgr.js").FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
  * @param {import("gmf/permalink/Permalink.js").PermalinkService} gmfPermalink The gmf permalink service.
  * @param {import("gmf/editing/Snapping.js").EditingSnappingService} gmfSnapping The gmf snapping service.
+ * @param {angular.auto.IInjectorService} $injector Main injector.
  * @constructor
  * @private
  * @hidden
@@ -92,7 +95,7 @@ module.directive('gmfMap', gmfMapComponent);
  * @ngdoc controller
  * @ngname GmfMapController
  */
-function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping) {
+function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping, $injector) {
   // Scope properties
 
   /**
@@ -129,6 +132,15 @@ function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping) {
    * @private
    */
   this.gmfSnapping_ = gmfSnapping;
+
+  /**
+   * @type {?boolean}
+   */
+  this.dropFileEnabled = false;
+
+  if ($injector.has('gmfDropFileEnabled')) {
+    this.dropFileEnabled = $injector.has('gmfDropFileEnabled');
+  }
 }
 
 /**

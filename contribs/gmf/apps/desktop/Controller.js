@@ -154,6 +154,8 @@ class Controller extends AbstractDesktopController {
  */
 const module = angular.module('Appdesktop', [appBase.name, gmfControllersAbstractDesktopController.name]);
 
+module.value('gmfDropFileEnabled', true);
+
 module.value('gmfContextualdatacontentTemplateUrl', 'gmf/contextualdata');
 module.run(
   /**
