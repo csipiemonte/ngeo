@@ -320,7 +320,7 @@ function manageContent(pluginOptions, usedContext, compilation, chunk, resolve, 
             )));
           }
         } catch (e) {
-          console.error('plugin error', e.stack || e);
+          console.error('plugin error', e);
           callback(`SCSS plugin error, ${e}`);
         }
         return url;
@@ -359,7 +359,7 @@ function manageContent(pluginOptions, usedContext, compilation, chunk, resolve, 
       usedContext.resourcePath = originalResourcePath;
       resolve();
     } catch (e) {
-      console.error('manage content error', e.stack || e);
+      console.error('manage content error', e);
       callback(`SCSS plugin error, ${e}`);
     }
   };
@@ -400,7 +400,7 @@ function processAsset(files) {
       };
       browse(0);
     } catch (e) {
-      console.error(e.stack || e);
+      console.error(e);
       reject(e);
     }
   };
