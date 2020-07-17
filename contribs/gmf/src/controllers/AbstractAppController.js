@@ -46,7 +46,6 @@ import ngeoStatemanagerWfsPermalink from 'ngeo/statemanager/WfsPermalink.js';
 import ngeoGeolocation from 'ngeo/geolocation/component.js';
 import * as olArray from 'ol/array.js';
 import {listen} from 'ol/events.js';
-import olMap from 'ol/Map.js';
 import olStyleCircle from 'ol/style/Circle.js';
 import olStyleFill from 'ol/style/Fill.js';
 import olStyleStroke from 'ol/style/Stroke.js';
@@ -55,6 +54,19 @@ import {ThemeEventType} from 'gmf/theme/Manager.js';
 import {getBrowserLanguage} from 'ngeo/utils.js';
 // @ts-ignore
 import * as Sentry from '@sentry/browser';
+import '@geoblocks/proj/src/somerc.js';
+import '@geoblocks/proj/src/lcc.js';
+import '@geoblocks/proj/src/tmerc.js';
+import {create} from '@geoblocks/proj/src/utils.js';
+import {get as getProjection} from 'ol/proj.js';
+import olMap from 'ol/Map.js';
+import olView from 'ol/View.js';
+import olControlScaleLine from 'ol/control/ScaleLine.js';
+import olControlZoom from 'ol/control/Zoom.js';
+import olControlRotate from 'ol/control/Rotate.js';
+import {defaults as interactionsDefaults} from 'ol/interaction.js';
+import olInteractionDragPan from 'ol/interaction/DragPan.js';
+import {noModifierKeys} from 'ol/events/condition.js';
 
 /**
  * A part of the application config.
@@ -67,7 +79,7 @@ import * as Sentry from '@sentry/browser';
  * @property {boolean} [autorotate]
  * @property {olx.ViewOptions} [mapViewConfig]
  * @property {import("ol/Collection.js").default<import('ol/control/Control.js').default>|Array<import('ol/control/Control.js').default>} [mapControls]
- * @property {import("ol/Collection.js").default<import('"ol/interaction/Interaction.js').default>|Array<import('ol/interaction/Interaction.js').default>} [mapInteractions]
+ * @property {import("ol/Collection.js").default<import('ol/interaction/Interaction.js').default>|Array<import('ol/interaction/Interaction.js').default>} [mapInteractions]
  * @property {number} [mapPixelRatio]
  */
 
@@ -80,15 +92,66 @@ import * as Sentry from '@sentry/browser';
  *      Note: although this is a list, only one can be defined.
  *
  *
- * @param {Config} config A part of the application config.
- * @param {import('ol/Map.js').default} map The map.
  * @param {angular.IScope} $scope Scope.
  * @param {angular.auto.IInjectorService} $injector Main injector.
+ * @param {boolean} [mobile] Is mobile.
  * @constructor
  * @ngdoc controller
  * @ngInject
  */
-export function AbstractAppController(config, map, $scope, $injector) {
+export function AbstractAppController($scope, $injector, mobile) {
+  const projections = $injector.get('gmfProjectionsOptions');
+  for (const code in projections) {
+    create(code, projections[code].definition.join(' '), projections[code].extent);
+  }
+  const config = $injector.get('gmfMapOptions');
+  const viewConfig = {
+    projection: getProjection(`EPSG:${config.srid || 2056}`),
+  };
+  Object.assign(viewConfig, config.view);
+
+  const scaleline = document.getElementById('scaleline');
+  const map = new olMap({
+    pixelRatio: config.mapPixelRatio,
+    layers: [],
+    view: new olView(viewConfig),
+    controls: config.mapControls || [
+      new olControlScaleLine({
+        target: scaleline,
+        // See: https://www.w3.org/TR/CSS21/syndata.html#length-units
+        dpi: 96,
+      }),
+      new olControlZoom(
+        config.zoom || {
+          target: mobile ? undefined : 'ol-zoom-control',
+          zoomInTipLabel: '',
+          zoomOutTipLabel: '',
+        }
+      ),
+      new olControlRotate({
+        label: getLocationIcon(),
+        tipLabel: '',
+      }),
+    ],
+    interactions:
+      config.mapInteractions ||
+      interactionsDefaults(
+        config.interationDefaults ||
+          (mobile
+            ? {pinchRotate: true}
+            : {
+                dragPan: false,
+                pinchRotate: true,
+                altShiftDragRotate: true,
+              })
+      ),
+  });
+  map.addInteraction(
+    new olInteractionDragPan({
+      condition: dragPanCondition,
+    })
+  );
+
   /**
    * Location service
    * @type {import("ngeo/statemanager/Location.js").StatemanagerLocation}
@@ -745,6 +808,16 @@ export function AbstractAppController(config, map, $scope, $injector) {
     zoom: config.geolocationZoom,
     autorotate: config.autorotate,
   };
+}
+
+/**
+ * Allow map pan with all buttons except right click (context menu)
+ * @param {import("ol/MapBrowserEvent.js").default} event MapBrowser event
+ * @return {boolean}
+ */
+function dragPanCondition(event) {
+  const pointerEvent = /** @type {import("ol/MapBrowserPointerEvent.js").default} */ (event).pointerEvent;
+  return noModifierKeys(event) && pointerEvent.button !== 2;
 }
 
 /**
