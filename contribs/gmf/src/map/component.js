@@ -22,8 +22,8 @@
 import angular from 'angular';
 import gmfPermalinkModule from 'gmf/permalink/module.js';
 import gmfEditingSnapping from 'gmf/editing/Snapping.js';
+import gmfFileDropZoneModule from 'gmf/dropfile/directive.js';
 import ngeoMapModule from 'ngeo/map/module.js';
-import gmfFileDropZone from 'gmf/dropfile/fileDropZoneComponent.js';
 import ngeoMapFeatureOverlayMgr from 'ngeo/map/FeatureOverlayMgr.js';
 
 /**
@@ -33,9 +33,9 @@ import ngeoMapFeatureOverlayMgr from 'ngeo/map/FeatureOverlayMgr.js';
 const module = angular.module('gmfMapComponent', [
   gmfPermalinkModule.name,
   gmfEditingSnapping.name,
+  gmfFileDropZoneModule.name,
   ngeoMapModule.name,
   ngeoMapFeatureOverlayMgr.name,
-  gmfFileDropZone.name,
 ]);
 
 module.run(
@@ -63,6 +63,7 @@ module.run(
  *     (milliseconds) of the animation that may occur on the div containing
  *     the map. Used to smoothly resize the map while the animation is in
  *     progress.
+ * @htmlAttribute {boolean|undefined} file-drop-zone-enabled Enable the drag and drop of a file in the map
  * @return {angular.IDirective} The Directive Definition Object.
  * @ngInject
  * @ngdoc directive
@@ -74,6 +75,7 @@ function gmfMapComponent() {
       'map': '<gmfMapMap',
       'manageResize': '<gmfMapManageResize',
       'resizeTransition': '<gmfMapResizeTransition',
+      'fileDropZoneEnabled': '<gmfMapFileDropZoneEnabled',
     },
     controller: 'GmfMapController as ctrl',
     bindToController: true,
@@ -87,7 +89,6 @@ module.directive('gmfMap', gmfMapComponent);
  * @param {import("ngeo/map/FeatureOverlayMgr.js").FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
  * @param {import("gmf/permalink/Permalink.js").PermalinkService} gmfPermalink The gmf permalink service.
  * @param {import("gmf/editing/Snapping.js").EditingSnappingService} gmfSnapping The gmf snapping service.
- * @param {angular.auto.IInjectorService} $injector Main injector.
  * @constructor
  * @private
  * @hidden
@@ -95,7 +96,7 @@ module.directive('gmfMap', gmfMapComponent);
  * @ngdoc controller
  * @ngname GmfMapController
  */
-function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping, $injector) {
+function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping) {
   // Scope properties
 
   /**
@@ -112,6 +113,11 @@ function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping, $injector)
    * @type {?boolean}
    */
   this.resizeTransition = null;
+
+  /**
+   * @type {?boolean}
+   */
+  this.fileDropZoneEnabled = null;
 
   // Injected properties
 
@@ -132,15 +138,6 @@ function Controller(ngeoFeatureOverlayMgr, gmfPermalink, gmfSnapping, $injector)
    * @private
    */
   this.gmfSnapping_ = gmfSnapping;
-
-  /**
-   * @type {?boolean}
-   */
-  this.dropFileEnabled = false;
-
-  if ($injector.has('gmfDropFileEnabled')) {
-    this.dropFileEnabled = $injector.has('gmfDropFileEnabled');
-  }
 }
 
 /**

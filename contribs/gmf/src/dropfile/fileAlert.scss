@@ -11,7 +11,7 @@ $bgselector-image-size: 3.00rem;
   bottom: $app-margin + 3rem;
   margin-left: calc(2 * #{$app-margin} + #{$bgselector-image-size} + 2 * #{$padding-small-vertical});
   .alert {
-    padding: 0.5rem;
+    padding: 0.4rem;
   }
 }
 
@@ -29,7 +29,6 @@ $bgselector-image-size: 3.00rem;
   display: flex;
   justify-content: center;
   align-items: center;
-
   p {
     opacity: 100%;
     font-size: 2em;
@@ -40,14 +39,4 @@ $bgselector-image-size: 3.00rem;
 
 .drop-zone-off {
   display: none;
-
-}
-
-.gmf-file-drop-zone {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
 }
